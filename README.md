@@ -1,5 +1,5 @@
 # yata_bot-3.0
-this is a public chat for anarchy servers wich is based uppon the prismarinejs api 
+this is a public chat bot for anarchy servers wich is based uppon the prismarinejs api 
 ______________________________________________________________________________
 
 to start working with the bot cd into the folder where uve putted the bot and run these following commands
