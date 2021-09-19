@@ -1,28 +1,17 @@
 {
-  "name": "yatabot",
-  "version": "3.0.0",
-  "description": "yata_bot is coded and scripted by moderncraft",
+  "name": "yata_bot",
+  "version": "1.3.0",
+  "description": "yata_bot_nice",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-
-
   },
-  "keywords": [
-    "minecraft",
-    "data",
-    "auto",
-    "update"
-  ],
   "author": "moderncraft",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/PrismarineJS/minecraft-data-auto-updater/issues"
-  },
-  "homepage": "https://github.com/PrismarineJS/minecraft-data-auto-updater#readme",
+  "license": "ISC",
   "dependencies": {
     "discord.js": "^13.1.0",
-    "mineflayer": "^3.9.0",
+    "fs": "^0.0.1-security",
+    "mineflayer": "^3.11.1",
     "mineflayer-cmd": "^1.1.3",
     "prismarine-viewer": "^1.20.0"
   }
