@@ -1,4 +1,4 @@
-const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink } = require(`./mcmodules.json`);
+const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink, serverinfo, mcgroup } = require(`./mcmodules.json`);
 const Discord = require(`discord.js`);
 const client = new Discord.Client({
 disable_everyone: true,
@@ -282,7 +282,7 @@ bot.once('spawn', () => {
                                                         bot.on("chat", (username, message) => {
                                                             if (username === bot.username) return
                                                             if (message === `${prefix1}group`) {
-                                                              bot.chat(`yatagarasu 2.0 is a group that does various spawn projects and is mainly a pvp group if ur interested u can apply at https://discord.gg/ajKUrhdSv6 and we hope to see you there best of luck -moderncraft`)
+                                                              bot.chat(`${mcgroup}`)
                                                                   }
                                                                 }) 
 
@@ -295,7 +295,7 @@ bot.once('spawn', () => {
                                                               })
                                                               client.on("message", message => {
                                                                 if(message.content.startsWith(`${prefix1}serverinfo`)) {
-                                                                    message.channel.send("welcome to yatagarasu 2.0 where u can find all things 0b0t and group related where everything is at ur fingertips using this epic minecraft/discordbot wich is a fully fledged all in one anarchy server solution for ur needs.")
+                                                                    message.channel.send(`${serverinfo}`)
                                                                 }
                                                             })
                                                           

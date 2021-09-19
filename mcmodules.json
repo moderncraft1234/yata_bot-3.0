@@ -3,7 +3,7 @@
 
 
 ,
-"help" : "ur hel cmd for discord and minecraft"
+"help" : "ur help cmd for discord and minecraft"
 
 ,
 
@@ -41,6 +41,15 @@
 ,
 
 "discordserverlink" : "discord server invite"
+
+,
+
+"serverinfo" : "tell about ur discord server wich would be specified in the serverinfo command"
+
+,
+
+"mcgroup" : "tell about ur minecraft anarchy server group and what u wanna acomplish as a group so ur group information is always available everywhere and anywhere"
+
 
 
 }
