@@ -18,7 +18,7 @@ npm install mineflayer-cmd
 and then run go to mcmodules and put in all the data and run the exe if the bot doenst run delete discord.js from the node modules folder 
 if ur still experiencing isues dm me at villager number 96#9685 have fun :D
 
-#compatibility isue
+# compatibility isue
 
 ______________________________________________________________________________
 curently the bot is hard to host on any device due to a plugin named FS and the config.json wich has invalid 
