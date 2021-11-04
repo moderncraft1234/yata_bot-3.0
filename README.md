@@ -15,11 +15,9 @@ npm install prismarine-viewer
 
 npm install mineflayer-cmd
 
-and then run go to mcmodules and put in all the data and run the exe if the bot doenst run delete discord.js from the node modules folder 
-if ur still experiencing isues dm me at villager number 96#9685 have fun :D
+and then run go to mcmodules and put in all the data and run the exe and if u experience isues regarding heroku hosting remove the filesystem object within the code
 
-# compatibility isue
+# how to bot
 
 ______________________________________________________________________________
-curently the bot is hard to host on any device due to a plugin named FS and the config.json wich has invalid 
-objects.
+to execute run node index and make sure u have node installed and npm
