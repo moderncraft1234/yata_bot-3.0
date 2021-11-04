@@ -1,15 +1,18 @@
-const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink, serverinfo, mcgroup } = require(`./mcmodules.json`);
+
 const Discord = require(`discord.js`);
-const client = new Discord.Client({
-disable_everyone: true,
-    max_message_cache: 500,
-    message_cache_lifetime: 120,
-    message_sweep_interval: 60,
-  });
+
+
+const { Client, Intents } = require("discord.js");
+const client = new Client({
+  intents: [Intents.FLAGS.GUILDS,"GUILD_MESSAGES"]
+});
+
+const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink } = require(`./mcmodules.json`);
 mineflayer = require('mineflayer')
 const mineflayerViewer = require('prismarine-viewer').mineflayer
 const cmd = require('mineflayer-cmd').plugin
 const fs = require('fs');
+const { userInfo } = require('os');
 let rawdata = fs.readFileSync('config.json');
 let data = JSON.parse(rawdata);
 var lasttime = -1;
@@ -22,6 +25,7 @@ var moveinterval = 2; // 2 second movement interval
 var maxrandom = 5; // 0-5 seconds added to movement interval (randomly)
 var host = data["ip"];
 var username = data["name"]
+
 var nightskip = data["auto-night-skip"]
 
 
@@ -29,6 +33,55 @@ var nightskip = data["auto-night-skip"]
 
 
 
+
+
+
+
+
+
+const path = require('path')
+function injectModules (bot) {
+  const modules = path.join(__dirname, 'modules')
+    .readdirSync(modules) // find the plugins
+    .filter(x => x.endsWith('.js')) // only use .js files
+    .map(pluginName => require(path.join(modules, pluginName)))
+
+  bot.loadPlugins(modules)
+}
+
+function initBot () {
+  const bot = mineflayer.createBot(OPTIONS)
+  injectModules(bot)
+
+  bot.on('end', initBot) // auto restart
+}
+
+
+
+
+const {keys} = Object;
+const {Console} = console;
+
+
+
+
+var util = require('util');
+var log_file = fs.createWriteStream(__dirname + '/logs/yata-bot-3.0-last-log.txt', {flags : 'w'});
+var log_stdout = process.stdout;
+
+console.log = function(d) { //
+  log_file.write(util.format(d) + '\n');
+  log_stdout.write(util.format(d) + '\n');
+};
+
+
+
+
+
+
+  
+
+ 
 
 
 let prefix = "!";
@@ -40,53 +93,91 @@ let bot = mineflayer.createBot({
 })
 
 
-client.on('ready', () => {
-    console.log(`The discord bot logged in! Username: ${client.user.username}!`)
-    channel = client.channels.cache.get(channel)
-    if (!channel) {
-      console.log(`I could not find the channel (${process.argv[3]})!\nUsage : node discord.js <discord bot token> <channel id> <host> <port> [<name>] [<password>]`)
-      process.exit(1)
-    }
-  })
+
+  
+
+
+
 
 bot.on('error', function(err) {
-    console.log("Bot has encountered an error");
+    console.log("bot couldnt log onto 0b0t.");
 });
 
+
+const playerList = Object.keys(bot.players).join(", ")
 
 
 
   
 //discord module
 
-bot.on("message", Message => {
-  let channel = client.channels.cache.get(`${discordchannel}`)
-  if (!channel) return;
-  channel.send(`${Message}`)
+client.on('ready', () => {
+  console.log(`The discord bot logged in! Username: ${client.user.username}!`)
+  channel = client.channels.cache.get(`888141250375581696`)
+  if (!channel) {
+    console.log(`I could not find the channel (${process.argv[3]})!\nUsage : node discord.js <discord bot token> <channel id> <host> <port> [<name>] [<password>]`)
+    process.exit(1)
+  }
+})
+
+// Redirect Discord messages to in-game chat
+client.on('message', message => {
+  // Only handle messages in specified channel
+  if (message.channel.id !== channel.id) return
+  // Ignore messages from the bot itself
+  if (message.author.id === client.user.id) return
+
+  bot.chat(`[${message.author.username}]: ${message.content}`)
+})
+
+// Redirect in-game messages to Discord channel
+bot.on('chat', (username, message) => {
+  // Ignore messages from the bot itself
+
+
+  channel.send(`${username}: ${message}`)
 })
 
 
 
-client.on("message", async msg => {
-let args = msg.content.split(" ").slice(1)
 
-if (msg.content.startsWith(".sudo")) {
-   let tosend = args.join(" ");
-   if (!tosend) return msg.reply ("no args")
 
-   bot.chat(tosend)
-   sending = true
-   msg.cchannel.send(`${msg.author.tag} hi ${tosend}`)
-   
-setTimeout(()=> {
-sending = false
-msg.channel.send(chatdata.join("/n"))
-chatdata = {}
-},750)
+
+
+
+  bot.on("whisper", (username, message)  => {
+    if (username === bot.username) return
+    if (message === `${prefix1}comehere` ) {
+      bot.chat(`/tpa ${username}`)    
+  fs.appendFile('logs/tpa-cords.txt', `<${username}> cords are  <${bot.entity.position}>`, function (err) {
+    if (err) throw err;
+    console.log('cords saved');
+    
+  })  
+    }
+  })
+
+
+  bot.on('death',function() {
+    fs.appendFile('logs/bot-deaths.txt', `bot died at <${bot.entity.position}> `, function (err) { 
+      if (err) throw err;
+      console.log('bot died and logged');
+    
+    }
+    
+  )
+  })
+    
   
 
-} 
-})
+
+  
+
+
+
+  client.on(`message`, message => { 
+    console.log(`[${message.author.tag}] > [${message}] `);
+  })
 
 
 bot.on('sleep', () => {
@@ -125,8 +216,9 @@ bot.on('sleep', () => {
 bot.addChatPattern("tpa", /^([A-Za-z0-9_]{2,16}) wants to teleport to you\.$/, {
     parse: true,
   });
-  bot.on("chat:tpa", ([[moderncraft]]) => {
-    bot.chat(`/tpy ${tpa}`);
+  bot.on("chat:tpa", ([[username]]) => {
+    bot.chat(`/tpy ${username}`);
+    bot.whisper(username, (`well hello there ${username}`))
 
   })    
 
@@ -147,7 +239,7 @@ bot.loadPlugin(cmd)
 bot.on('time', function(time) {
 	if(nightskip == "true"){
 	if(bot.time.timeOfDay >= 13000){
-	bot.chat('/time set day')
+	bot.chat('hehe')
 	}}
     if (connected <1) {
         return;
@@ -177,6 +269,16 @@ bot.on('time', function(time) {
 });
 
 
+bot._client.on("tab_complete", data => console.log(data))
+
+bot.on(`death`,function(){
+  var delayInMilliseconds = 1000;
+}
+
+)
+
+
+
 bot.on('spawn',function() {
     connected=1;
 });
@@ -186,17 +288,34 @@ bot.on('death',function() {
 });
 
 bot.once('spawn', () => {
-    mineflayerViewer(bot, { port: 3007, firstPerson: false })
+    mineflayerViewer(bot, { port: 3009, firstPerson: false })
+    console.log("the bot is logged onto 0b0t.org")
   })
+
+
+
 
 
   function bindEvents(bot) {
     bot.on('login', function() {
-        console.log("Bot has logged in");
+      var delayInMilliseconds = 3000;
+      bot.chat(`oh hi there guess who just joined`)
+        console.log(`bot has logged in on 0b0t with ${bot.username} `);
+        bot.on('error', function(err) {
+          console.log("bot couldnt log into mc chek the username\password in the config files ");
+          return
+          console.log("bot might be blocked by 0b0t")
+      });
     });
+  
+    
+
 
     bot.on('spawn', function() {
         console.log("Bot has spawned");
+        return
+        console.log(`wierd`)
+        
     });
 
     bot.on('kicked', function(reason) {
@@ -282,7 +401,7 @@ bot.once('spawn', () => {
                                                         bot.on("chat", (username, message) => {
                                                             if (username === bot.username) return
                                                             if (message === `${prefix1}group`) {
-                                                              bot.chat(`${mcgroup}`)
+                                                              bot.chat(`yatagarasu 2.0 is a group that does various spawn projects and is mainly a pvp group if ur interested u can apply at https://discord.gg/ajKUrhdSv6 and we hope to see you there best of luck -moderncraft`)
                                                                   }
                                                                 }) 
 
@@ -295,7 +414,7 @@ bot.once('spawn', () => {
                                                               })
                                                               client.on("message", message => {
                                                                 if(message.content.startsWith(`${prefix1}serverinfo`)) {
-                                                                    message.channel.send(`${serverinfo}`)
+                                                                    message.channel.send("welcome to yatagarasu 2.0 where u can find all things 0b0t and group related where everything is at ur fingertips using this epic minecraft/discordbot wich is a fully fledged all in one anarchy server solution for ur needs.")
                                                                 }
                                                             })
                                                           
@@ -362,22 +481,72 @@ bot.once('spawn', () => {
                                                               console.log(`whisper help found by ${username}: ${message}`)  
                                                               }
                                                             })
-                                                            
-                                                               
-                                                            
 
 
-                                                            
+                                                            bot.on("whisper", (username, message)  => {
+                                                              if (username === bot.username) return
+                                                              if (message === `${prefix1}location` ) {
+                                                              bot.whisper(username, (`am at [${bot.entity.position}] come and find me if u dare `))  
+                                                              fs.appendFile('logs/position-requests.txt', `|<${username}> requested coords|`, function (err) {
+                                                                if (err) throw err;
+                                                                console.log(`<${username}> requested coordinates and obtained them dont let him get to the base all data is saved`);
+                                                                
+                                                              })  
+                                                                }
+                                                              })
 
 
-
-
-                                                           
-                                                                    
-
+                                                            client.on("message", message => {
+                                                              if(message.content.startsWith(`${prefix1}ingamename`)) {
+                                                                  message.channel.send(`the ingame name of the mc bot is ${bot.username}`)
                                                                   
+                                                              }
+                                                            }
+                                                          )
 
-                                                                              
+                                                          client.on("message",message =>{
+                                                            if(message.content.startsWith(`${prefix1}killbot`)) {
+                                                           bot.chat(`/kill`)
+                                                           message.channel.send(`ingame bot ${bot.username} has killed himself in order to get active`)
+                                                           console.log(`bot has killed itself uppon a request from ${message.author.tag}`)
+                                                          }
+                                                        }
+                                                           )
+
+                                                           client.on("message",message =>{
+                                                            if(message.content.startsWith(`${prefix1}bot-info`)) {
+                                                            var delayInMilliseconds = 1000;
+                                                            message.channel.send(`bot is running on ${version1} and hosted on ${host1} and the bot username is ${bot.username} ${username}`)
+                                                            console.log(`bot information has been requested by  ${message.author.tag}`)
+                                                            bot.chat(`try to do ${prefix1}commands`)
+                                                      
+                                                            }
+                                                            })
+
+                                                            client.on("message",message =>{
+                                                              if(message.content.startsWith(`${prefix1}position`)) {
+                                                              var delayInMilliseconds = 1000;
+                                                              message.channel.send(`i am located at[${bot.entity.position}]`)
+                                                              console.log(`a discord user had requested the bot postion hes discord username is ${message.author.tag}`)
+                                                              }
+                                                            })
+                                                            
+                                                        
+
+                                                              client.on("message",message =>{
+                                                                if(message.content.startsWith(`${prefix1}server-help`)) {
+                                                                var delayInMilliseconds = 3000;
+                                                                bot.chat(`/help`)
+                                                                console.log(`server info reqested by ${message.author.tag}`)
+                                                                }
+                                                              
+                                                              })
+
+  
+                                                              
+
+  
+                                                                         
                         
   client.login(`${token1}`)
 

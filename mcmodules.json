@@ -1,55 +1,46 @@
 {
-"tpa" : "ur ign"
+"tpa" : "username"
 
 
 ,
-"help" : "ur help cmd for discord and minecraft"
+"help" : "help cmd"
 
 ,
 
-"botinfo" : "information about ur dicord bot"
+"botinfo" : "botinfo cmd"
 
 ,
 
 
-"token1" : "discord bot token"
+"token1" : "discord token"
 
 ,
 
-"mcloginname" : "email for the mc acount"
+"mcloginname" : "mc acount email"
 
 ,
 
-"mcloginpass" : "password for the mc ac"
+"mcloginpass" : "mc acount password"
 
 ,
 
-"discordchannel" : "chat channel for ur discord link for the bot"
+"discordchannel" : "channel"
 
 ,
 
-"prefix1" : "bot prefix"
+"prefix1" : "-"
 
 ,
 
-"host1" : "host"
+"host1" : "0b0t.org"
 
 ,
 
-"version1" : "version"
+"version1" : "1.12.2"
 
 ,
 
-"discordserverlink" : "discord server invite"
-
-,
-
-"serverinfo" : "tell about ur discord server wich would be specified in the serverinfo command"
-
-,
-
-"mcgroup" : "tell about ur minecraft anarchy server group and what u wanna acomplish as a group so ur group information is always available everywhere and anywhere"
-
+"discordserverlink" : "https://discord.gg/uQ3mZG2efx"
 
 
 }
