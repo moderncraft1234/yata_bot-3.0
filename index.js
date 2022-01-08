@@ -1,14 +1,18 @@
 
 const Discord = require(`discord.js`);
 
-
+var express = require('express');
 const { Client, Intents } = require("discord.js");
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS,"GUILD_MESSAGES"]
 });
 
+
+
+
 const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink } = require(`./mcmodules.json`);
 mineflayer = require('mineflayer')
+const pvp = require('mineflayer-pvp').plugin
 const mineflayerViewer = require('prismarine-viewer').mineflayer
 const cmd = require('mineflayer-cmd').plugin
 const fs = require('fs');
@@ -25,19 +29,23 @@ var moveinterval = 2; // 2 second movement interval
 var maxrandom = 5; // 0-5 seconds added to movement interval (randomly)
 var host = data["ip"];
 var username = data["name"]
-
+const navigatePlugin = require('mineflayer-navigate')(mineflayer);
+const armorManager = require('mineflayer-armor-manager')
+const {
+    pathfinder,
+    Movements,
+    goals
+} = require('mineflayer-pathfinder')
 var nightskip = data["auto-night-skip"]
+const GoalFollow = goals.GoalFollow
+const GoalBlock = goals.GoalBlock
+const { MessageAttachment, MessageEmbed } = require('discord.js');
 
-
-
-
-
-
-
-
-
-
-
+const vec3 = require('vec3')
+function requireUncached(module) {
+  delete require.cache[require.resolve(module)]
+  return require(module)
+}
 
 const path = require('path')
 function injectModules (bot) {
@@ -63,10 +71,11 @@ const {keys} = Object;
 const {Console} = console;
 
 
+var date = new Date
 
 
 var util = require('util');
-var log_file = fs.createWriteStream(__dirname + '/logs/yata-bot-3.0-last-log.txt', {flags : 'w'});
+var log_file = fs.createWriteStream(__dirname + `/logs/yata-bot-3.0-last-log.txt`, {flags : 'w'});
 var log_stdout = process.stdout;
 
 console.log = function(d) { //
@@ -75,11 +84,6 @@ console.log = function(d) { //
 };
 
 
-
-
-
-
-  
 
  
 
@@ -92,19 +96,32 @@ let bot = mineflayer.createBot({
     password: `${mcloginpass}`,
 })
 
+bot.loadPlugin(pvp)
+bot.loadPlugin(armorManager)
+bot.loadPlugin(pathfinder)
 
 
-  
+
+
+
+
+
+bot.once('spawn', () => {
+  bot.setControlState('right', true);
+  setTimeout(() => {
+      bot.setControlState('right', false);
+  }, 2000);
+})
 
 
 
 
 bot.on('error', function(err) {
-    console.log("bot couldnt log onto 0b0t.");
+    console.log(`bot couldnt log onto ${host1}`);
 });
 
 
-const playerList = Object.keys(bot.players).join(", ")
+
 
 
 
@@ -113,12 +130,14 @@ const playerList = Object.keys(bot.players).join(", ")
 
 client.on('ready', () => {
   console.log(`The discord bot logged in! Username: ${client.user.username}!`)
-  channel = client.channels.cache.get(`888141250375581696`)
+  channel = client.channels.cache.get(`${discordchannel}`)
   if (!channel) {
     console.log(`I could not find the channel (${process.argv[3]})!\nUsage : node discord.js <discord bot token> <channel id> <host> <port> [<name>] [<password>]`)
     process.exit(1)
+        
   }
 })
+
 
 // Redirect Discord messages to in-game chat
 client.on('message', message => {
@@ -127,16 +146,26 @@ client.on('message', message => {
   // Ignore messages from the bot itself
   if (message.author.id === client.user.id) return
 
-  bot.chat(`[${message.author.username}]: ${message.content}`)
+  bot.chat(`[${message.author.username}] > ${message.content}`)
 })
 
 // Redirect in-game messages to Discord channel
 bot.on('chat', (username, message) => {
-  // Ignore messages from the bot itself
 
 
-  channel.send(`${username}: ${message}`)
+
+  const serverchat = new MessageEmbed()
+  .setDescription(`[${username}] : ${message} `)
+  .setColor('#0099ff')
+  .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+ 
+channel.send({ embeds: [serverchat] });
 })
+
+
+
+
+
 
 
 
@@ -149,19 +178,20 @@ bot.on('chat', (username, message) => {
     if (username === bot.username) return
     if (message === `${prefix1}comehere` ) {
       bot.chat(`/tpa ${username}`)    
-  fs.appendFile('logs/tpa-cords.txt', `<${username}> cords are  <${bot.entity.position}>`, function (err) {
-    if (err) throw err;
-    console.log('cords saved');
+  fs.appendFile('logs/tpa-coords.txt', `<${username}> coords are  <${bot.entity.position}> date ${date} `,);
     
-  })  
+    
+    console.log('coords saved')
+    
+  }
     }
-  })
+  )
 
 
   bot.on('death',function() {
     fs.appendFile('logs/bot-deaths.txt', `bot died at <${bot.entity.position}> `, function (err) { 
       if (err) throw err;
-      console.log('bot died and logged');
+      console.log(`bot died at ${bot.entity.position} `);
     
     }
     
@@ -239,7 +269,7 @@ bot.loadPlugin(cmd)
 bot.on('time', function(time) {
 	if(nightskip == "true"){
 	if(bot.time.timeOfDay >= 13000){
-	bot.chat('hehe')
+	bot.chat('join spawncult',`https://discord.gg/Yxh6j3bzPw`)
 	}}
     if (connected <1) {
         return;
@@ -289,9 +319,52 @@ bot.on('death',function() {
 
 bot.once('spawn', () => {
     mineflayerViewer(bot, { port: 3009, firstPerson: false })
-    console.log("the bot is logged onto 0b0t.org")
+    console.log(`bot has sucsesfully logged on ${host1}`)
+    var delayInMilliseconds = 30000;
+    bot.chat(`what a time to be alive`)
   })
 
+
+  bot.on('playerJoined', (player) => {
+    if (player.username !== bot.username) {
+
+
+      var delayInMilliseconds = 3000;
+
+      bot.whisper(username, (`hello there ${player.username} welcome to the worst server`))
+
+      
+
+    }
+  })
+
+
+  bot.on('end', function () {
+    console.log("Bot has ended");
+    server.close();
+    discord.destroy()
+    stopSpam()
+    setTimeout(relog, 30000);
+});
+
+
+
+
+
+
+
+
+  function relog() {
+    console.log("Attempting to reconnect...");
+    bot = mineflayer.createBot(options);
+    bindEvents(bot);
+    bot.once('spawn', () => {
+  bot.setControlState('right', true);
+  setTimeout(() => {
+    bot.setControlState('right', false);
+  }, 2000);
+})
+}
 
 
 
@@ -300,11 +373,10 @@ bot.once('spawn', () => {
     bot.on('login', function() {
       var delayInMilliseconds = 3000;
       bot.chat(`oh hi there guess who just joined`)
-        console.log(`bot has logged in on 0b0t with ${bot.username} `);
+        console.log(`bot has logged in on ${host1} with ${bot.username} `);
         bot.on('error', function(err) {
-          console.log("bot couldnt log into mc chek the username\password in the config files ");
-          return
-          console.log("bot might be blocked by 0b0t")
+          console.log(`bot couldnt log into ${host1} chek the username\password in the config files `);
+          
       });
     });
   
@@ -313,8 +385,7 @@ bot.once('spawn', () => {
 
     bot.on('spawn', function() {
         console.log("Bot has spawned");
-        return
-        console.log(`wierd`)
+      
         
     });
 
@@ -345,17 +416,24 @@ bot.once('spawn', () => {
 
   //various chat modules for the discord client and the minecraft client
 
+ bot.on("chat", (username, message) => {
+   console.log(`${username} > ${message} `)
+ })
+
+
+
+
   bot.on("chat", (username, message) => {
     if (username === bot.username) return
     if (message === `${prefix1}yatabot`) {
-      bot.chat(`i am yata bot the best bot ever on 0b0t also known as teamcow1 am programmed by some based dude going by the name of moderncraft`)
+      bot.chat(`i am yata bot the best bot ever on ${host1} also known as ${bot.entity.username} am programmed by some based dude going by the name of moderncraft`)
           }
         })
 
         bot.on("chat", (username, message) => {
             if (username === bot.username) return
             if (message === `${prefix1}help`) {
-                bot.whisper(username, (`am better then u ngl`))
+                bot.whisper(username, (`very epic bot join spawncult now`))
                   }
                 })
         
@@ -385,7 +463,7 @@ bot.once('spawn', () => {
                                       bot.on("chat", (username, message) => {
                                             if (username === bot.username) return
                                             if (message === `${prefix1}aboutserver`) {
-                                              bot.chat(`this is the most cursed server ever but still the best we have a shit ton of dupes beggining with the chunk dupe towards the family fun pack dupe and even the donkey lead dupe jeez 3 dupes not good man but eh better keep the dupes here would be cool thx owners.`)
+                                              bot.whisper(username, (`this server is called ${host1} and u can find information about it here |https://9b9t.miraheze.org/wiki/Main_Page|`))
                                                   }
                                                 })
             
@@ -394,40 +472,71 @@ bot.once('spawn', () => {
                                                 bot.on("chat", (username, message) => {
                                                     if (username === bot.username) return
                                                     if (message === `${prefix1}commands`) {
-                                                        bot.whisper(username, (`discord  aboutserver  help  content kit   help yatabot  group . my prefix is -`))
+                                                        bot.whisper(username, (`discord  aboutserver  help  content kit   help yatabot  group . my prefix is ${prefix1} `))
                                                           }
                                                         })
                                                    
                                                         bot.on("chat", (username, message) => {
                                                             if (username === bot.username) return
                                                             if (message === `${prefix1}group`) {
-                                                              bot.chat(`yatagarasu 2.0 is a group that does various spawn projects and is mainly a pvp group if ur interested u can apply at https://discord.gg/ajKUrhdSv6 and we hope to see you there best of luck -moderncraft`)
+                                                              bot.whisper(username, (`join spawn cult now its the best group  if u wanna do some epic ${host1} related stuff :)`))
                                                                   }
                                                                 }) 
 
+                                                                const about = new MessageEmbed()
+                                                                .setTitle(`yata_bot`)
+                                                                .setDescription(`yatagarasu discord bot wich is fully functional and curently  running on ${host1}`)
+                                                                .setColor('#0099ff')
+                                                                .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
                                                                 
+                                                                
+
+
                                                                 
                                                                 client.on("message", message => {
                                                                   if(message.content.startsWith(`${prefix1}about`)) {
-                                                                      message.channel.send("yatagarasu discord bot at ur service fully fledged and functional at 0b0t and at the same epic discord chat bot.")
+                                                                      message.channel.send({ embeds: [about] });
                                                                   }
                                                               })
+
+                                                              const serverinfo = new MessageEmbed()
+                                                              .setTitle(`yata_bot`)
+                                                              .setDescription(`welcome to yatagarasu 2.0 your desired hub for all things  anarchy servers the bot is curently being hosted on ${host1} this is also where we have a group called the spawn cult of 9b9t  `)
+                                                              .setColor('#0099ff')
+                                                              .setAuthor(`spawn cult group invite link > https://discord.gg/qW246MUACc `)
+                                                              .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+                                                                     
+
                                                               client.on("message", message => {
                                                                 if(message.content.startsWith(`${prefix1}serverinfo`)) {
-                                                                    message.channel.send("welcome to yatagarasu 2.0 where u can find all things 0b0t and group related where everything is at ur fingertips using this epic minecraft/discordbot wich is a fully fledged all in one anarchy server solution for ur needs.")
+                                                                    message.channel.send({ embeds: [serverinfo] });
                                                                 }
                                                             })
                                                           
+                                                            const help2 = new MessageEmbed()
+                                                            .setTitle(`yata_bot`)
+                                                            .setDescription(`${help}`)
+                                                            .setColor('#0099ff')
+                                                            .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+                                                            
+
                                                           client.on("message", message => {
                                                             if(message.content.startsWith(`${prefix1}help2`)) {
-                                                                message.channel.send(`${help}`)
+                                                                message.channel.send({ embeds: [help2] });
                                                             }
                                                           }
                                                         )
 
+
+                                                        const botinfo2 = new MessageEmbed()
+                                                        .setTitle(`yata_bot`)
+                                                        .setDescription(`${botinfo}`)
+                                                        .setColor('#0099ff')
+                                                        .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+
                                                         client.on("message", message => {
                                                           if(message.content.startsWith(`${prefix1}botinfo`)) {
-                                                              message.channel.send(`${botinfo}`)
+                                                              message.channel.send({ embeds: [botinfo2] });
                                                           }
                                                         }
                                                       )
@@ -441,6 +550,12 @@ bot.once('spawn', () => {
                                                           bot.chat(`/tpa ${username}`)
                                                           bot.whisper(username, (`bot tries to tpa to u`))
                                                           console.log(` ${username} got the bot to tpa`) 
+                                                          , function (err) {
+                                                            if (err) throw err;
+                                                            bot.whisper(username, (`bot cant tpa to u due to it not being suported on ${host1}`)) 
+                                                                     }
+
+
                                                               }
                                                             })
 
@@ -478,9 +593,13 @@ bot.once('spawn', () => {
                                                               if (username === bot.username) return
                                                               if (message === `${prefix1}help` ) {
                                                               bot.whisper(username, (`${help}`))
-                                                              console.log(`whisper help found by ${username}: ${message}`)  
+                                                              console.log(`whisper help found by ${username}: ${message}`)
+                                                              fs.appendFile('logs/help-commands', `|<${username}> used ${message} for a help command|`, function (err) {
+                                                                if (err) throw err;  
+                                                              })
                                                               }
                                                             })
+                                                          
 
 
                                                             bot.on("whisper", (username, message)  => {
@@ -496,51 +615,146 @@ bot.once('spawn', () => {
                                                               })
 
 
+                                                        const ingamename = new MessageEmbed()
+                                                        .setTitle(`yata_bot`)
+                                                        .setDescription(`${bot.username}`)
+                                                        .setColor('#0099ff')
+                                                        .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+
+
                                                             client.on("message", message => {
                                                               if(message.content.startsWith(`${prefix1}ingamename`)) {
-                                                                  message.channel.send(`the ingame name of the mc bot is ${bot.username}`)
+                                                                  message.channel.send({ embeds: [ingamename] });
                                                                   
                                                               }
                                                             }
                                                           )
 
+                                                          const killbot = new MessageEmbed()
+                                                          .setTitle(`yata_bot`)
+                                                          .setDescription(`ingame bot  has killed itself `)
+                                                          .setColor('#0099ff')
+                                                          .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+
                                                           client.on("message",message =>{
                                                             if(message.content.startsWith(`${prefix1}killbot`)) {
                                                            bot.chat(`/kill`)
-                                                           message.channel.send(`ingame bot ${bot.username} has killed himself in order to get active`)
+                                                           message.channel.send({ embeds: [killbot] });
                                                            console.log(`bot has killed itself uppon a request from ${message.author.tag}`)
                                                           }
                                                         }
                                                            )
 
+
+                                                           const botinfo1 = new MessageEmbed()
+                                                          .setTitle(`yata_bot`)
+                                                          .setDescription(`bot is running on ${version1} and hosted on ${host1} and the bot username is ${bot.username}  ${username}`)
+                                                          .setColor('#0099ff')
+                                                          .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+
                                                            client.on("message",message =>{
                                                             if(message.content.startsWith(`${prefix1}bot-info`)) {
                                                             var delayInMilliseconds = 1000;
-                                                            message.channel.send(`bot is running on ${version1} and hosted on ${host1} and the bot username is ${bot.username} ${username}`)
+                                                            message.channel.send({ embeds: [botinfo1] });
                                                             console.log(`bot information has been requested by  ${message.author.tag}`)
                                                             bot.chat(`try to do ${prefix1}commands`)
                                                       
                                                             }
                                                             })
 
+                                                            const position1 = new MessageEmbed()
+                                                          .setTitle(`yata_bot`)
+                                                          .setDescription(`sorry but this command is unavailable for now.`)
+                                                          .setColor('#0099ff')
+                                                          .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+
                                                             client.on("message",message =>{
                                                               if(message.content.startsWith(`${prefix1}position`)) {
                                                               var delayInMilliseconds = 1000;
-                                                              message.channel.send(`i am located at[${bot.entity.position}]`)
+                                                              message.channel.send({ embeds: [position1] });
                                                               console.log(`a discord user had requested the bot postion hes discord username is ${message.author.tag}`)
                                                               }
                                                             })
                                                             
+                                                            const serverhelp = new MessageEmbed()
+                                                            .setTitle(`yata_bot`)
+                                                            .setDescription(`bot performed /help on ${host1} u can see result in <#${discordchannel}>`)
+                                                            .setColor('#0099ff')
+                                                            .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
                                                         
+                                                                 
+
 
                                                               client.on("message",message =>{
                                                                 if(message.content.startsWith(`${prefix1}server-help`)) {
                                                                 var delayInMilliseconds = 3000;
+                                                                message.channel.send({ embeds: [serverhelp] });
                                                                 bot.chat(`/help`)
                                                                 console.log(`server info reqested by ${message.author.tag}`)
                                                                 }
                                                               
                                                               })
+
+
+                                                              
+
+                                                              const topic6 = new MessageEmbed()
+                                                              .setTitle(`yata_bot   `)
+                                                              .setDescription(`topic has been updated of <#${discordchannel}>  `)
+                                                              .setColor('#0099ff')
+                                                              .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
+                                                              
+
+
+                                                              client.on("message",message =>{
+                                                                if(message.content.startsWith(`${prefix1}topic`)) {
+                                                                var delayInMilliseconds = 3000;
+                                                                channel.setTopic(`the ingamebot name is ${bot.entity.username} server version is ${version1} and the server is ${host1} and the bot is located at ${bot.entity.position} and ${host1} has curently ${Object.keys(bot.players).length} players online  `)
+                                                                message.channel.send({ embeds: [topic6] });
+                                                               console.log(`${message.author.tag} > ${message}`)
+                                                                }
+       
+                                                              })
+
+
+                                                            
+                                                              
+                                                              
+                                                             
+                                                                  
+                                                              
+                                                            
+
+  
+client.on("message",message =>{
+  if(message.content.startsWith(`${prefix1}playerlist`)) {
+
+    const other1 = new MessageEmbed() 
+    .setDescription (` the server has ${Object.keys(bot.players).length} players online`)    
+    .addFields(
+    { name: 'Players curently', value: `Online: ${Object.keys(bot.players).join(' ,').slice(0, 1000)}` }
+    )
+    .setTimestamp()
+    .setFooter('playerlist cant show all players due to it being a big server', 'https://i.imgur.com/FAlKdV9.gif');
+
+
+message.channel.send({ embeds: [other1] });
+} 
+
+})
+                                                                
+                                                              
+                                                              
+    
+                                                              
+
+                                                              
+
+ 
+
+
+                                                         
+                                                             
 
   
                                                               
