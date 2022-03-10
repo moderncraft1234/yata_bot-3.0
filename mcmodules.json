@@ -12,7 +12,7 @@
 ,
 
 
-"token1" : "ODcyMTcxNDY1ODU0ODI0NTIw.YQl--Q.xofei3ZYALfdUG2eJZExmpZ0SM0"
+"token1" : "discord-token"
 
 ,
 
@@ -24,7 +24,7 @@
 
 ,
 
-"discordchannel" : "925386567474905158"
+"discordchannel" : "discord brige channel"
 
 ,
 
@@ -44,16 +44,16 @@
 
 ,
 
-"channellogs" : "934153345474650132"
+"channellogs" : "minecraft bot logs as in player joins and weather update aka enviremental updates dedicated to a discord channel"
 ,
 
-"botrelog" : "934422987988406294"
+"botrelog" : "bot relogs and reasoning why the bot relogs or gets kicked in a discord channel"
 
 ,
 
-"youtubetoken1" : "AIzaSyB4HR_x5Il3AsR68cWd8xqA8ZuYCLNju-g"
+"youtubetoken1" : "youtube-token"
 
-
+// this was a future update but was later scrapped
 
 }
 
