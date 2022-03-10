@@ -1,4 +1,4 @@
-
+const {tpa, help, youtubetoken1, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink, channellogs, botrelog } = require(`./mcmodules.json`);
 const Discord = require(`discord.js`);
 
 var express = require('express');
@@ -8,9 +8,13 @@ const client = new Client({
 });
 
 
+const YouTube = require("discord-youtube-api");
+const Youtube = require("youtube-api")
+Youtube.authenticate({
+  type: "oauth"
+, token: `${youtubetoken1}`
+});
 
-
-const {tpa, help, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink } = require(`./mcmodules.json`);
 mineflayer = require('mineflayer')
 const pvp = require('mineflayer-pvp').plugin
 const mineflayerViewer = require('prismarine-viewer').mineflayer
@@ -67,6 +71,11 @@ function initBot () {
 
 
 
+
+
+
+
+
 const {keys} = Object;
 const {Console} = console;
 
@@ -75,7 +84,8 @@ var date = new Date
 
 
 var util = require('util');
-var log_file = fs.createWriteStream(__dirname + `/logs/yata-bot-3.0-last-log.txt`, {flags : 'w'});
+const { channel } = require('diagnostics_channel');
+var log_file = fs.createWriteStream(__dirname + `/logs/botlogs.log`, {flags : 'w'});
 var log_stdout = process.stdout;
 
 console.log = function(d) { //
@@ -85,10 +95,9 @@ console.log = function(d) { //
 
 
 
- 
 
 
-let prefix = "!";
+
 let bot = mineflayer.createBot({
     version: `${version1}`,
     host: `${host1}`,
@@ -103,6 +112,50 @@ bot.loadPlugin(pathfinder)
 
 
 
+
+function relog() {
+  console.log("Attempting to reconnect...");
+  client.channels.cache.get(`${botrelog}`).send(`bot atempting to reconect to  ${host1}`);
+  bot = mineflayer.createBot
+  client.channels.cache.get(`${botrelog}`).setTopic(`bot is curently online on (${host1})`)
+
+}
+
+
+
+
+
+
+
+
+
+  bot.on('kicked', (reason) => {
+    console.log(`I got kicked for ${reason}`)
+    client.channels.cache.get(`${botrelog}`).send(`bot got kicked for ${reason}`);
+    client.channels.cache.get(`${botrelog}`).setTopic(`bot got kicked for ${reason} bot will shortly be back last known position is (${bot.entity.position}) `)
+  })
+
+
+  bot.on('end', function() {
+      console.log("Bot has ended");
+      // If set less than 30s you will get an invalid credentials error, which we handle above.
+      setTimeout(relog, 30000);  
+      client.channels.cache.get(`${botrelog}`).send(`bot has ended`);
+
+  });
+
+
+bot.on('error', function(err) {
+      console.log('Error attempting to reconnect: ' + err.errno + '.');
+      if (err.code == undefined) {
+          console.log('Invalid credentials OR bot needs to wait because it relogged too quickly.');
+          console.log('Will retry to connect in 30 seconds. ');
+          setTimeout(relog, 30000);
+          client.channels.cache.get(`${botrelog}`).send(`bot failed to reconect due to server outage bot will atempt a new reconect in 30 secconds`);
+          
+      }
+      })
+     
 
 
 
@@ -125,12 +178,13 @@ bot.on('error', function(err) {
 
 
 
+
   
 //discord module
 
 client.on('ready', () => {
   console.log(`The discord bot logged in! Username: ${client.user.username}!`)
-  channel = client.channels.cache.get(`${discordchannel}`)
+ channel2 = client.channels.cache.get(`${discordchannel}`)
   if (!channel) {
     console.log(`I could not find the channel (${process.argv[3]})!\nUsage : node discord.js <discord bot token> <channel id> <host> <port> [<name>] [<password>]`)
     process.exit(1)
@@ -159,11 +213,17 @@ bot.on('chat', (username, message) => {
   .setColor('#0099ff')
   .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
  
-channel.send({ embeds: [serverchat] });
+channel2.send({ embeds: [serverchat] });
 })
 
 
 
+
+
+
+
+
+ 
 
 
 
@@ -207,6 +267,7 @@ channel.send({ embeds: [serverchat] });
 
   client.on(`message`, message => { 
     console.log(`[${message.author.tag}] > [${message}] `);
+
   })
 
 
@@ -252,6 +313,101 @@ bot.addChatPattern("tpa", /^([A-Za-z0-9_]{2,16}) wants to teleport to you\.$/, {
 
   })    
 
+
+  bot.addChatPattern("tpa", /discord.gg\.$/, {
+    parse: true,
+  });
+
+  bot.on("chat:discord.gg", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+  })    
+
+
+
+  bot.addChatPattern("tpa", /kits\.$/, {
+    parse: true,
+  });
+ 
+  bot.on("chat:free", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+  })    
+
+  
+  bot.addChatPattern("tpa", /shop\.$/, {
+    parse: true,
+  });
+
+
+  bot.on("chat:kits", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+  })    
+
+
+  bot.addChatPattern("tpa", /cheap\.$/, {
+    parse: true,
+  });
+
+
+  bot.on("chat:cheap", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+
+  })    
+
+
+  bot.addChatPattern("tpa", /20b20t\.$/, {
+    parse: true,
+  });
+
+
+  bot.on("chat:20b20t", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+  })    
+
+
+
+  bot.addChatPattern("tpa", /stashes\.$/, {
+    parse: true,
+  });
+
+
+  bot.on("chat:stashes", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+
+  })    
+
+
+  bot.addChatPattern("tpa", /stashes\.$/, {
+    parse: true,
+  });
+
+
+  bot.on("chat:", ([[username]]) => {
+    bot.chat(`/ignore ${username}`);
+   console.log(`${username} has been ignored `)
+   client.channels.cache.get(`${channellogs}`).send(`${username} has been ignored`);
+
+
+  })   
+
+  bot.on("chat:yatagarasu",([[username]]) => {
+   bot.whisper(username,(`hi there`))
+  client.channels.cache.get(`${channellogs}`).send(`${username} has said the word O_o `)
+  })
+    
 
 
 // anti afk module
@@ -303,35 +459,48 @@ bot._client.on("tab_complete", data => console.log(data))
 
 bot.on(`death`,function(){
   var delayInMilliseconds = 1000;
+  client.channels.cache.get(`${channellogs}`).send(`bot died at ${bot.entity.position}`);
 }
 
 )
 
 
+    
+
+
+
 
 bot.on('spawn',function() {
     connected=1;
+     
+
+
+console.log(`bot has respawned`)
+client.channels.cache.get(`${channellogs}`).send(`bot has respawned`);
 });
+
+//auto channel topic updater on event
 
 bot.on('death',function() {
     bot.emit("respawn")
+    channel2.setTopic(`the ingamebot name is ${bot.entity.username} server version is ${version1} and the server is ${host1} and the bot is located at ${bot.entity.position} and ${host1} has curently ${Object.keys(bot.players).length} players online  `)
 });
 
 bot.once('spawn', () => {
     mineflayerViewer(bot, { port: 3009, firstPerson: false })
     console.log(`bot has sucsesfully logged on ${host1}`)
     var delayInMilliseconds = 30000;
-    bot.chat(`what a time to be alive`)
   })
 
 
   bot.on('playerJoined', (player) => {
     if (player.username !== bot.username) {
 
-
+      client.channels.cache.get(`${channellogs}`).send(`${player.username} has joined ${host1}`);
       var delayInMilliseconds = 3000;
 
       bot.whisper(username, (`hello there ${player.username} welcome to the worst server`))
+    
 
       
 
@@ -339,81 +508,48 @@ bot.once('spawn', () => {
   })
 
 
-  bot.on('end', function () {
-    console.log("Bot has ended");
-    server.close();
-    discord.destroy()
-    stopSpam()
-    setTimeout(relog, 30000);
-});
-
-
-
-
-
-
-
-
-  function relog() {
-    console.log("Attempting to reconnect...");
-    bot = mineflayer.createBot(options);
-    bindEvents(bot);
-    bot.once('spawn', () => {
-  bot.setControlState('right', true);
-  setTimeout(() => {
-    bot.setControlState('right', false);
-  }, 2000);
-})
-}
-
-
-
-
-  function bindEvents(bot) {
-    bot.on('login', function() {
-      var delayInMilliseconds = 3000;
-      bot.chat(`oh hi there guess who just joined`)
-        console.log(`bot has logged in on ${host1} with ${bot.username} `);
-        bot.on('error', function(err) {
-          console.log(`bot couldnt log into ${host1} chek the username\password in the config files `);
-          
-      });
-    });
-  
+  bot.on('playerLeft', (player) => {
+    if (player.username !== bot.username) {
+      client.channels.cache.get(`${channellogs}`).send(`${player.username} has left ${host1}`);
     
+    }
+    })
 
 
-    bot.on('spawn', function() {
-        console.log("Bot has spawned");
-      
-        
-    });
 
-    bot.on('kicked', function(reason) {
-        console.log("Kicked for ", reason);
-    });
 
-    bot.on('end', function(reason) {
-        // Wait 10 seconds between tries, and try 9999 times
-        waitUntil(100, 9999, function condition() {
-          try {
-            console.log("bot disconected, attempting to reconnect...");
-                bot = mineflayer.createBot(options);
-                bindEvents(bot);
-                return true;
-           } catch (error) {
-                console.log("Error: " + error);
-                return false;
-            }
-            // Callback function that is only executed when condition is true or time allotted has elapsed
-        }, function done(result) {
-            console.log("Connection attempt result was: " + result);
-        
-        });
 
-   });
-  }
+ 
 
+    bot.on('kicked', (reason) => {
+      console.log(`I got kicked for ${reason}`)
+      client.channels.cache.get(`${botrelog}`).send(`bot got kicked for ${reason}`);
+    })
+
+
+    bot.on('rain', () => {
+      if (bot.isRaining) {
+        client.channels.cache.get(`${channellogs}`).send(`It started raining`);
+      } else {
+        client.channels.cache.get(`${channellogs}`).send(`it stopped raining`);
+      }
+    })
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+  
+
+     
   //various chat modules for the discord client and the minecraft client
 
  bot.on("chat", (username, message) => {
@@ -617,7 +753,7 @@ bot.once('spawn', () => {
 
                                                         const ingamename = new MessageEmbed()
                                                         .setTitle(`yata_bot`)
-                                                        .setDescription(`${bot.username}`)
+                                                        .setDescription(`igamename of the bot =`)
                                                         .setColor('#0099ff')
                                                         .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
 
@@ -625,6 +761,7 @@ bot.once('spawn', () => {
                                                             client.on("message", message => {
                                                               if(message.content.startsWith(`${prefix1}ingamename`)) {
                                                                   message.channel.send({ embeds: [ingamename] });
+                                                                  message.channel.send(`[${bot.entity.username}]`)
                                                                   
                                                               }
                                                             }
@@ -664,7 +801,7 @@ bot.once('spawn', () => {
 
                                                             const position1 = new MessageEmbed()
                                                           .setTitle(`yata_bot`)
-                                                          .setDescription(`sorry but this command is unavailable for now.`)
+                                                          .setDescription(`position`)
                                                           .setColor('#0099ff')
                                                           .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
 
@@ -672,6 +809,7 @@ bot.once('spawn', () => {
                                                               if(message.content.startsWith(`${prefix1}position`)) {
                                                               var delayInMilliseconds = 1000;
                                                               message.channel.send({ embeds: [position1] });
+                                                              message.channel.send(`${bot.entity.position}`)
                                                               console.log(`a discord user had requested the bot postion hes discord username is ${message.author.tag}`)
                                                               }
                                                             })
@@ -709,7 +847,7 @@ bot.once('spawn', () => {
                                                               client.on("message",message =>{
                                                                 if(message.content.startsWith(`${prefix1}topic`)) {
                                                                 var delayInMilliseconds = 3000;
-                                                                channel.setTopic(`the ingamebot name is ${bot.entity.username} server version is ${version1} and the server is ${host1} and the bot is located at ${bot.entity.position} and ${host1} has curently ${Object.keys(bot.players).length} players online  `)
+                                                                channel2.setTopic(`the ingamebot name is ${bot.entity.username} server version is ${version1} and the server is ${host1} and the bot is located at ${bot.entity.position} and ${host1} has curently ${Object.keys(bot.players).length} players online  `)
                                                                 message.channel.send({ embeds: [topic6] });
                                                                console.log(`${message.author.tag} > ${message}`)
                                                                 }
@@ -730,7 +868,7 @@ client.on("message",message =>{
   if(message.content.startsWith(`${prefix1}playerlist`)) {
 
     const other1 = new MessageEmbed() 
-    .setDescription (` the server has ${Object.keys(bot.players).length} players online`)    
+    .setDescription (` the server has ${Object.keys(bot.players).length} players online [${host1}]`)    
     .addFields(
     { name: 'Players curently', value: `Online: ${Object.keys(bot.players).join(' ,').slice(0, 1000)}` }
     )
@@ -743,24 +881,46 @@ message.channel.send({ embeds: [other1] });
 
 })
                                                                 
-                                                              
-                                                              
-    
-                                                              
 
-                                                              
 
+
+
+
+const helpcmd1 = new MessageEmbed()
+.setTitle(`yata_bot-help-page   `)
+.setDescription(`this is yata-bot-3.0 and this bot is hosted on ${host1} the current discord commands for the bot are. :(${prefix1}playerlist) wich gives u all online players. : (${prefix1}server-help) wich executes /help ingame for the server where it is hosted on.: (${prefix1}position) wich gives u the current location of the bot.: (${prefix1}killbot) wich kills the ingamebot.: (${prefix1}ingamename) wich tell u the ign of the bot.:... The bot also has a webgui at http://modern.tudbut.de:3009/ wich u can use to view the bot suroundings it sometimes will take a while for it in order to render all in but thats all  `)
+.setColor('#0099ff')
+.setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif',`http://modern.tudbut.de:3009/`)
+
+
+
+client.on("message",message =>{
+  if(message.content.startsWith(`${prefix1}help`)) {
+  var delayInMilliseconds = 3000;
  
+  message.channel.send({ embeds: [helpcmd1] });
+ console.log(`${message.author.tag} > ${message}`)
+ client.channels.cache(`${channellogs}`).send(`help command requested from ${message.author.tag}`)
+  }
+
+})
 
 
-                                                         
-                                                             
+//furry related commands lol
 
-  
-                                                              
+client.on("message",message => {
+  if(message.content.startsWith(`${prefix1}UwU`)) {
+    message.channel.send(`OwO`)
+    client.channels.cache(`${channellogs}`).send(`[${message.author.tag}] > ${prefix1}UwU`)
+  }
+  })
 
-  
-                                                                         
+
+
+
+
+
+                                                 
                         
   client.login(`${token1}`)
 
