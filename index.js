@@ -1,49 +1,28 @@
-const {tpa, help, youtubetoken1, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink, channellogs, botrelog } = require(`./mcmodules.json`);
-const Discord = require(`discord.js`);
+const {tpa, help, youtubetoken1, itself, botinfo, token1, mcloginname, mcloginpass, discordchannel, prefix1, host1, version1, discordserverlink, channellogs, botrelog } = require(`./mcmodules.json`);
 
+const pvp = require('mineflayer-pvp').plugin
+const fs = require('fs');
 var express = require('express');
 const { Client, Intents } = require("discord.js");
 const client = new Client({
   intents: [Intents.FLAGS.GUILDS,"GUILD_MESSAGES"]
 });
-
-
-const YouTube = require("discord-youtube-api");
-const Youtube = require("youtube-api")
-Youtube.authenticate({
-  type: "oauth"
-, token: `${youtubetoken1}`
-});
-
+const Discord = require(`discord.js`);
 mineflayer = require('mineflayer')
-const pvp = require('mineflayer-pvp').plugin
-const mineflayerViewer = require('prismarine-viewer').mineflayer
-const cmd = require('mineflayer-cmd').plugin
-const fs = require('fs');
-const { userInfo } = require('os');
-let rawdata = fs.readFileSync('config.json');
-let data = JSON.parse(rawdata);
-var lasttime = -1;
-var moving = 0;
-var connected = 0;
-var actions = [ 'forward', 'back', 'left', 'right']
-var lastaction;
-var pi = 3.14159;
-var moveinterval = 2; // 2 second movement interval
-var maxrandom = 5; // 0-5 seconds added to movement interval (randomly)
-var host = data["ip"];
-var username = data["name"]
-const navigatePlugin = require('mineflayer-navigate')(mineflayer);
-const armorManager = require('mineflayer-armor-manager')
 const {
     pathfinder,
     Movements,
     goals
 } = require('mineflayer-pathfinder')
-var nightskip = data["auto-night-skip"]
-const GoalFollow = goals.GoalFollow
-const GoalBlock = goals.GoalBlock
+const armorManager = require('mineflayer-armor-manager')
+
+const mineflayerViewer = require('prismarine-viewer').mineflayer
+const cmd = require('mineflayer-cmd').plugin
+
+const navigatePlugin = require('mineflayer-navigate')(mineflayer);
+
 const { MessageAttachment, MessageEmbed } = require('discord.js');
+
 
 const vec3 = require('vec3')
 function requireUncached(module) {
@@ -60,13 +39,10 @@ function injectModules (bot) {
 
   bot.loadPlugins(modules)
 }
+mineflayer = require('mineflayer')
 
-function initBot () {
-  const bot = mineflayer.createBot(OPTIONS)
-  injectModules(bot)
 
-  bot.on('end', initBot) // auto restart
-}
+
 
 
 
@@ -101,9 +77,10 @@ console.log = function(d) { //
 let bot = mineflayer.createBot({
     version: `${version1}`,
     host: `${host1}`,
+    auth: `microsoft`,
     username: `${mcloginname}`,
-    password: `${mcloginpass}`,
 })
+
 
 bot.loadPlugin(pvp)
 bot.loadPlugin(armorManager)
@@ -178,7 +155,7 @@ bot.on('error', function(err) {
 
 
 
-
+const username = bot.player
   
 //discord module
 
@@ -422,37 +399,7 @@ bot.loadPlugin(cmd)
 
 
   
-bot.on('time', function(time) {
-	if(nightskip == "true"){
-	if(bot.time.timeOfDay >= 13000){
-	bot.chat('join spawncult',`https://discord.gg/Yxh6j3bzPw`)
-	}}
-    if (connected <1) {
-        return;
-    }
-    if (lasttime<0) {
-        lasttime = bot.time.age;
-    } else {
-        var randomadd = Math.random() * maxrandom * 20;
-        var interval = moveinterval*20 + randomadd;
-        if (bot.time.age - lasttime > interval) {
-            if (moving == 1) {
-                bot.setControlState(lastaction,false);
-                moving = 0;
-                lasttime = bot.time.age;
-            } else {
-                var yaw = Math.random()*pi - (0.5*pi);
-                var pitch = Math.random()*pi - (0.5*pi);
-                bot.look(yaw,pitch,false);
-                lastaction = actions[Math.floor(Math.random() * actions.length)];
-                bot.setControlState(lastaction,true);
-                moving = 1;
-                lasttime = bot.time.age;
-                bot.activateItem();
-            }
-        }
-    }
-});
+
 
 
 bot._client.on("tab_complete", data => console.log(data))
@@ -555,6 +502,7 @@ bot.once('spawn', () => {
  bot.on("chat", (username, message) => {
    console.log(`${username} > ${message} `)
  })
+
 
 
 
@@ -785,7 +733,7 @@ bot.once('spawn', () => {
 
                                                            const botinfo1 = new MessageEmbed()
                                                           .setTitle(`yata_bot`)
-                                                          .setDescription(`bot is running on ${version1} and hosted on ${host1} and the bot username is ${bot.username}  ${username}`)
+                                                          .setDescription(`bot is running on ${version1} and hosted on ${host1} and the bot username is ${bot.username}  `)
                                                           .setColor('#0099ff')
                                                           .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
 
@@ -841,7 +789,7 @@ bot.once('spawn', () => {
                                                               .setDescription(`topic has been updated of <#${discordchannel}>  `)
                                                               .setColor('#0099ff')
                                                               .setFooter(`${host1}`,'https://i.imgur.com/FAlKdV9.gif')
-                                                              
+                                                              //topic updater for ingame status and packets.....
 
 
                                                               client.on("message",message =>{
@@ -924,3 +872,6 @@ client.on("message",message => {
                         
   client.login(`${token1}`)
 
+
+        
+        
